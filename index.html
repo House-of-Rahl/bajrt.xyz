@@ -13,11 +13,14 @@
 
         body {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             height: 100vh;
             background-color: #f0f0f0;
-            padding-top: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
         }
 
         .grid-container {
@@ -25,6 +28,7 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 20px;
             padding: 20px;
+            flex-grow: 1;
         }
 
         .floating-box {
@@ -65,8 +69,10 @@
     </style>
 </head>
 <body>
-    <div>
+    <div class="controls">
         <button onclick="addBox()">Add Box</button>
+        <button onclick="downloadData()">Download Data</button>
+        <input type="file" onchange="uploadData(event)">
         <input type="color" id="bgColorPicker" onchange="changeBackgroundColor(this.value)">
     </div>
     <div class="grid-container"></div>
@@ -78,15 +84,12 @@
             document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
                 data[index] = textarea.value;
             });
-            document.cookie = "boxData=" + JSON.stringify(data) + ";path=/";
+            localStorage.setItem("boxData", JSON.stringify(data));
         }
 
         function loadData() {
-            let cookieData = document.cookie.split('; ').find(row => row.startsWith('boxData='));
-            if (cookieData) {
-                return JSON.parse(cookieData.split('=')[1]);
-            }
-            return [];
+            let storedData = localStorage.getItem("boxData");
+            return storedData ? JSON.parse(storedData) : [];
         }
 
         function addBox() {
@@ -103,15 +106,45 @@
             let removeBtn = document.createElement("button");
             removeBtn.innerText = "X";
             removeBtn.className = "remove-btn";
-            removeBtn.onclick = () => box.remove();
+            removeBtn.onclick = () => {
+                box.remove();
+                saveData();
+            };
             box.appendChild(removeBtn);
 
             document.querySelector(".grid-container").appendChild(box);
         }
 
+        function downloadData() {
+            let data = localStorage.getItem("boxData");
+            let blob = new Blob([data], { type: "application/json" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "boxData.json";
+            link.click();
+        }
+
+        function uploadData(event) {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                localStorage.setItem("boxData", e.target.result);
+                location.reload();
+            };
+            reader.readAsText(file);
+        }
+
         function changeBackgroundColor(color) {
             document.body.style.backgroundColor = color;
         }
+
+        window.onload = function() {
+            let storedData = loadData();
+            storedData.forEach(content => {
+                addBox();
+                document.querySelectorAll(".floating-box textarea")[document.querySelectorAll(".floating-box").length - 1].value = content;
+            });
+        };
     </script>
 </body>
 </html>
