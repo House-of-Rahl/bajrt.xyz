@@ -9,6 +9,10 @@
             font-family: Arial, sans-serif;
             background-color: #fef3c7;
             padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .controls {
             margin-bottom: 10px;
@@ -16,14 +20,18 @@
         .grid {
             display: grid;
             gap: 10px;
+            width: 90vw;
+            height: 80vh;
+            grid-auto-rows: 1fr;
+            justify-content: center;
         }
         .note {
             padding: 10px;
             border-radius: 10px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             position: relative;
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 100%;
             transition: transform 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
         }
         .note:hover {
@@ -72,9 +80,7 @@
             const grid = document.getElementById("notesGrid");
             grid.innerHTML = "";
             let cols = Math.min(5, Math.ceil(Math.sqrt(notes.length)));
-            let rows = Math.min(20, Math.ceil(notes.length / 5));
             grid.style.gridTemplateColumns = `repeat(${cols || 2}, 1fr)`;
-            grid.style.gridTemplateRows = `repeat(${rows || 2}, auto)`;
             
             notes.forEach((noteData, index) => {
                 const note = document.createElement("div");
