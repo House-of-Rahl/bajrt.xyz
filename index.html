@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8"> <!-- Specifies character encoding as UTF-8 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures proper responsive behavior on different devices -->
-    <title>Floating Box Example</title> <!-- Sets the title of the webpage -->
+    <title>Floating Box Grid</title> <!-- Sets the title of the webpage -->
     <style>
         /* Basic reset for consistent styling */
         * {
@@ -12,13 +12,22 @@
             box-sizing: border-box; /* Ensures width and height include padding and border */
         }
 
-        /* Centering the floating box in the middle of the screen */
+        /* Centering the grid container in the middle of the screen */
         body {
             display: flex; /* Uses flexbox for layout */
             justify-content: center; /* Centers content horizontally */
             align-items: center; /* Centers content vertically */
             height: 100vh; /* Sets height to 100% of viewport height */
             background-color: #f0f0f0; /* Sets background color to light gray */
+        }
+
+        /* Grid container for floating boxes */
+        .grid-container {
+            display: grid; /* Uses CSS grid layout */
+            grid-template-columns: repeat(4, 1fr); /* Defines 4 columns */
+            grid-template-rows: repeat(5, auto); /* Defines 5 rows */
+            gap: 20px; /* Adds spacing between boxes */
+            padding: 20px; /* Adds padding around the grid */
         }
 
         /* Styling the floating box to be rectangular with rounded corners and a floating effect */
@@ -28,7 +37,6 @@
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3); /* Adds a stronger shadow for a floating effect */
             border-radius: 15px; /* Rounds the corners more */
             text-align: center; /* Centers text inside the box */
-            max-width: 400px; /* Increases the width of the box */
             transform: translateY(-5px); /* Slightly raises the box for a floating appearance */
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition effect */
         }
@@ -41,32 +49,16 @@
     </style>
 </head>
 <body>
-    <div class="floating-box"> <!-- Defines a div with a class for styling -->
-        <p>This is an example paragraph inside a floating box. It remains centered on the screen.</p> <!-- Example paragraph text -->
+    <div class="grid-container"> <!-- Defines a container for the grid -->
+        <!-- Generating 20 floating boxes -->
+        <script>
+            for (let i = 1; i <= 20; i++) { /* Loops to create 20 boxes */
+                let box = document.createElement("div"); /* Creates a new div element */
+                box.className = "floating-box"; /* Assigns the floating box class */
+                box.innerHTML = `<p>Box ${i}</p>`; /* Adds text inside the box */
+                document.querySelector(".grid-container").appendChild(box); /* Appends the box to the grid container */
+            }
+        </script>
     </div>
-
-    <script>
-        /* Example JavaScript function to log a message when the page loads */
-        window.onload = function() { /* Runs function when the window loads */
-            console.log("Page has loaded successfully!"); /* Logs a message to the console */
-        };
-
-        /* Example: Using the Date object to display the current date and time */
-        let currentDate = new Date(); /* Creates a new Date object */
-        console.log("Current Date and Time:", currentDate); /* Logs the current date and time */
-
-        /* Example: Using the Math object to generate a random number */
-        let randomNumber = Math.random(); /* Generates a random number between 0 and 1 */
-        console.log("Random Number:", randomNumber); /* Logs the random number */
-
-        /* Example: Using the Navigator object to get browser details */
-        console.log("Browser Information:", navigator.userAgent); /* Logs browser information */
-
-        /* Example: Using the Document object to change the floating box color */
-        document.querySelector(".floating-box").style.backgroundColor = "lightblue"; /* Changes the background color of the floating box */
-
-        /* Example: Using the Window object to display an alert message */
-        window.alert("Welcome to the Floating Box Example!"); /* Displays an alert popup */
-    </script>
 </body>
 </html>
