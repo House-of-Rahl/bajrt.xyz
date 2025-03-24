@@ -32,7 +32,6 @@
 
         /* Styling the floating box to be rectangular with rounded corners and a floating effect */
         .floating-box {
-            background-color: white; /* Sets background color to white */
             padding: 30px 50px; /* Adds padding inside the box to make it more rectangular */
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3); /* Adds a stronger shadow for a floating effect */
             border-radius: 15px; /* Rounds the corners more */
@@ -50,15 +49,81 @@
 </head>
 <body>
     <div class="grid-container"> <!-- Defines a container for the grid -->
-        <!-- Generating 20 floating boxes -->
-        <script>
-            for (let i = 1; i <= 20; i++) { /* Loops to create 20 boxes */
-                let box = document.createElement("div"); /* Creates a new div element */
-                box.className = "floating-box"; /* Assigns the floating box class */
-                box.innerHTML = `<p>Box ${i}</p>`; /* Adds text inside the box */
-                document.querySelector(".grid-container").appendChild(box); /* Appends the box to the grid container */
-            }
-        </script>
     </div>
+    <script>
+        let colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff", "#ff99c8", "#fcf6bd"];
+
+        /* Function to save data to local storage */
+        function saveData() {
+            let data = [];
+            document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
+                data[index] = textarea.value;
+            });
+            document.cookie = "boxData=" + JSON.stringify(data) + ";path=/";
+        }
+
+        /* Function to load data from cookies */
+        function loadData() {
+            let cookieData = document.cookie.split('; ').find(row => row.startsWith('boxData='));
+            if (cookieData) {
+                return JSON.parse(cookieData.split('=')[1]);
+            }
+            return [];
+        }
+
+        /* Function to download data */
+        function downloadData() {
+            let data = [];
+            document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
+                data[index] = textarea.value;
+            });
+            let blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "boxData.json";
+            link.click();
+        }
+
+        /* Function to upload data */
+        function uploadData(event) {
+            let file = event.target.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let uploadedData = JSON.parse(e.target.result);
+                document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
+                    textarea.value = uploadedData[index] || "";
+                });
+            };
+            reader.readAsText(file);
+        }
+
+        let storedData = loadData();
+
+        for (let i = 0; i < 20; i++) { /* Loops to create 20 boxes */
+            let box = document.createElement("div"); /* Creates a new div element */
+            box.className = "floating-box"; /* Assigns the floating box class */
+            box.style.backgroundColor = colors[i % colors.length]; /* Assigns a different background color */
+            
+            let textarea = document.createElement("textarea"); /* Creates a textarea element */
+            textarea.style.width = "100%";
+            textarea.style.height = "100px";
+            textarea.value = storedData[i] || "";
+            textarea.oninput = saveData; /* Saves data when text is entered */
+
+            box.appendChild(textarea); /* Adds textarea to the box */
+            document.querySelector(".grid-container").appendChild(box); /* Appends the box to the grid container */
+        }
+
+        /* Add buttons for saving, downloading, and uploading data */
+        let controls = document.createElement("div");
+        controls.style.position = "absolute";
+        controls.style.top = "10px";
+        controls.style.right = "10px";
+        controls.innerHTML = `
+            <button onclick="downloadData()">Download Data</button>
+            <input type="file" onchange="uploadData(event)" />
+        `;
+        document.body.appendChild(controls);
+    </script>
 </body>
 </html>
