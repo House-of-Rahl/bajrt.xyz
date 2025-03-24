@@ -1,148 +1,130 @@
-<!DOCTYPE html> <!-- Defines the document type as HTML5 -->
-<html lang="en"> <!-- Sets the language of the document to English -->
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8"> <!-- Specifies character encoding as UTF-8 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures proper responsive behavior on different devices -->
-    <title>Floating Box Grid</title> <!-- Sets the title of the webpage -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticky Notes</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            display: flex;
-            height: 100vh;
-            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            background-color: #fef3c7;
+            padding: 20px;
         }
-
         .controls {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
+            margin-bottom: 10px;
         }
-
-        .grid-container {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
-            padding: 20px;
-            flex-grow: 1;
-            width: 100%;
-            height: 100%;
         }
-
-        .floating-box {
-            width: 100%;
-            height: 100%;
-            aspect-ratio: 1;
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
-            border-radius: 15px;
-            text-align: center;
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+        .note {
+            background-color: #fde68a;
             padding: 10px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
-
-        .floating-box:hover {
-            transform: translateY(-10px);
-            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4);
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #fef3c7;
+            border: none;
+            outline: none;
+            resize: none;
         }
-
-        .box-controls {
+        .delete {
             position: absolute;
             top: 5px;
             right: 5px;
-            display: flex;
-            gap: 5px;
-        }
-
-        .color-picker {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-            background: url('https://cdn-icons-png.flaticon.com/512/1827/1827951.png') no-repeat center;
-            background-size: cover;
-            border: none;
-        }
-
-        .close-box {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
             background: red;
             color: white;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             border: none;
-            border-radius: 5px;
+            padding: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
     <div class="controls">
-        <button onclick="addBox()">Add Tile</button>
-        <button onclick="downloadData()">Download Data</button>
-        <input type="file" onchange="uploadData(event)" style="display:none;" id="fileUpload">
-        <button onclick="document.getElementById('fileUpload').click()">Upload Data</button>
+        <button onclick="addNote()">Add Note</button>
+        <button onclick="saveNotes()">Save Notes</button>
+        <input type="file" id="upload" accept=".json" onchange="uploadNotes(event)" />
     </div>
-    <div class="grid-container"></div>
+    <div id="notesGrid" class="grid"></div>
+    
     <script>
-        function addBox(text = "", color = null) {
-            let box = document.createElement("div");
-            box.className = "floating-box";
-            box.style.backgroundColor = color || `hsl(${Math.random() * 360}, 100%, 75%)`;
+        let notes = JSON.parse(localStorage.getItem("stickyNotes")) || [];
+
+        function renderNotes() {
+            const grid = document.getElementById("notesGrid");
+            grid.innerHTML = "";
+            let cols = Math.min(5, Math.ceil(Math.sqrt(notes.length)));
+            let rows = Math.min(20, Math.ceil(notes.length / 5));
+            grid.style.gridTemplateColumns = `repeat(${cols || 2}, 1fr)`;
+            grid.style.gridTemplateRows = `repeat(${rows || 2}, auto)`;
             
-            let controls = document.createElement("div");
-            controls.className = "box-controls";
-            
-            let colorPicker = document.createElement("input");
-            colorPicker.type = "color";
-            colorPicker.className = "color-picker";
-            colorPicker.value = box.style.backgroundColor;
-            colorPicker.oninput = (e) => {
-                box.style.backgroundColor = e.target.value;
-                textarea.style.backgroundColor = e.target.value;
-                saveData();
-            };
-            colorPicker.style.opacity = 0;
-            colorPicker.style.position = "absolute";
-            colorPicker.style.width = "20px";
-            colorPicker.style.height = "20px";
-            
-            let colorPickerIcon = document.createElement("div");
-            colorPickerIcon.className = "color-picker";
-            colorPickerIcon.onclick = () => colorPicker.click();
-            
-            let closeBox = document.createElement("button");
-            closeBox.className = "close-box";
-            closeBox.innerHTML = "&times;";
-            closeBox.onclick = () => {
-                box.remove();
-                saveData();
-            };
-            
-            controls.appendChild(colorPicker);
-            controls.appendChild(colorPickerIcon);
-            controls.appendChild(closeBox);
-            
-            let textarea = document.createElement("textarea");
-            textarea.value = text;
-            textarea.style.backgroundColor = box.style.backgroundColor;
-            textarea.oninput = saveData;
-            
-            box.appendChild(controls);
-            box.appendChild(textarea);
-            document.querySelector(".grid-container").appendChild(box);
-            saveData();
+            notes.forEach((text, index) => {
+                const note = document.createElement("div");
+                note.className = "note";
+                
+                const textarea = document.createElement("textarea");
+                textarea.value = text;
+                textarea.oninput = () => updateNote(index, textarea.value);
+                
+                const button = document.createElement("button");
+                button.className = "delete";
+                button.innerText = "X";
+                button.onclick = () => removeNote(index);
+                
+                note.appendChild(textarea);
+                note.appendChild(button);
+                grid.appendChild(note);
+            });
         }
+
+        function addNote() {
+            notes.push("");
+            updateStorage();
+            renderNotes();
+        }
+
+        function updateNote(index, value) {
+            notes[index] = value;
+            updateStorage();
+        }
+
+        function removeNote(index) {
+            notes.splice(index, 1);
+            updateStorage();
+            renderNotes();
+        }
+
+        function saveNotes() {
+            const blob = new Blob([JSON.stringify(notes)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "sticky_notes.json";
+            link.click();
+        }
+
+        function uploadNotes(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    notes = JSON.parse(e.target.result);
+                    updateStorage();
+                    renderNotes();
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function updateStorage() {
+            localStorage.setItem("stickyNotes", JSON.stringify(notes));
+        }
+
+        renderNotes();
     </script>
 </body>
 </html>
