@@ -25,16 +25,18 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
             padding: 20px;
             flex-grow: 1;
+            width: 100%;
+            height: 100%;
         }
 
         .floating-box {
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 100%;
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             text-align: center;
@@ -63,8 +65,15 @@
             background: inherit;
         }
 
-        .color-picker {
-            margin-top: 5px;
+        .color-picker-icon {
+            width: 20px;
+            height: 20px;
+            background: url('https://cdn-icons-png.flaticon.com/512/565/565655.png') no-repeat center center;
+            background-size: cover;
+            cursor: pointer;
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
         }
 
         .remove-btn {
@@ -99,11 +108,6 @@
             localStorage.setItem("boxData", JSON.stringify(data));
         }
 
-        function loadData() {
-            let storedData = localStorage.getItem("boxData");
-            return storedData ? JSON.parse(storedData) : [];
-        }
-
         function addBox() {
             let box = document.createElement("div");
             box.className = "floating-box";
@@ -115,15 +119,20 @@
             textarea.oninput = saveData;
             box.appendChild(textarea);
 
-            let colorPicker = document.createElement("input");
-            colorPicker.type = "color";
-            colorPicker.className = "color-picker";
-            colorPicker.value = color;
-            colorPicker.oninput = function() {
-                box.style.backgroundColor = this.value;
-                textarea.style.backgroundColor = this.value;
+            let colorPickerIcon = document.createElement("div");
+            colorPickerIcon.className = "color-picker-icon";
+            colorPickerIcon.onclick = function() {
+                let colorInput = document.createElement("input");
+                colorInput.type = "color";
+                colorInput.style.position = "absolute";
+                colorInput.style.opacity = 0;
+                colorInput.oninput = function() {
+                    box.style.backgroundColor = this.value;
+                    textarea.style.backgroundColor = this.value;
+                };
+                colorInput.click();
             };
-            box.appendChild(colorPicker);
+            box.appendChild(colorPickerIcon);
 
             let removeBtn = document.createElement("button");
             removeBtn.innerText = "X";
@@ -161,7 +170,7 @@
         }
 
         window.onload = function() {
-            for (let i = 0; i < 16; i++) { // Initialize 4x4 grid
+            for (let i = 0; i < 25; i++) { // Initialize 5x5 grid
                 addBox();
             }
         };
