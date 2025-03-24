@@ -91,9 +91,9 @@
 </head>
 <body>
     <div class="controls">
-        <button onclick="addBox()">Add Box</button>
+        <button onclick="addBox()">Add Tile</button>
         <button onclick="downloadData()">Download Data</button>
-        <input type="file" onchange="uploadData(event)">
+        <input type="file" onchange="uploadData(event)" style="display:none;" id="fileUpload"><button onclick="document.getElementById('fileUpload').click()">Upload</button>
         <input type="color" id="bgColorPicker" onchange="changeBackgroundColor(this.value)">
     </div>
     <div class="grid-container"></div>
