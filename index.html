@@ -26,18 +26,25 @@
         .grid-container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
             gap: 20px;
             padding: 20px;
             flex-grow: 1;
         }
 
         .floating-box {
-            padding: 30px 50px;
+            width: 100px;
+            height: 100px;
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             text-align: center;
             transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
         }
 
         .floating-box:hover {
@@ -46,13 +53,18 @@
         }
 
         textarea {
-            width: 100%;
-            height: 100px;
+            width: 80%;
+            height: 60px;
             border: none;
             outline: none;
             resize: none;
-            padding: 10px;
-            border-radius: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            background: inherit;
+        }
+
+        .color-picker {
+            margin-top: 5px;
         }
 
         .remove-btn {
@@ -103,6 +115,16 @@
             textarea.oninput = saveData;
             box.appendChild(textarea);
 
+            let colorPicker = document.createElement("input");
+            colorPicker.type = "color";
+            colorPicker.className = "color-picker";
+            colorPicker.value = color;
+            colorPicker.oninput = function() {
+                box.style.backgroundColor = this.value;
+                textarea.style.backgroundColor = this.value;
+            };
+            box.appendChild(colorPicker);
+
             let removeBtn = document.createElement("button");
             removeBtn.innerText = "X";
             removeBtn.className = "remove-btn";
@@ -139,11 +161,9 @@
         }
 
         window.onload = function() {
-            let storedData = loadData();
-            storedData.forEach(content => {
+            for (let i = 0; i < 16; i++) { // Initialize 4x4 grid
                 addBox();
-                document.querySelectorAll(".floating-box textarea")[document.querySelectorAll(".floating-box").length - 1].value = content;
-            });
+            }
         };
     </script>
 </body>
