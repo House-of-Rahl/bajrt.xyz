@@ -18,19 +18,19 @@
             gap: 10px;
         }
         .note {
-            background-color: #fde68a;
             padding: 10px;
-            border-radius: 5px;
+            border-radius: 10px;
             box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
             position: relative;
         }
         textarea {
             width: 100%;
             height: 100px;
-            background: #fef3c7;
             border: none;
             outline: none;
             resize: none;
+            border-radius: 10px;
+            padding: 5px;
         }
         .delete {
             position: absolute;
@@ -54,6 +54,11 @@
     
     <script>
         let notes = JSON.parse(localStorage.getItem("stickyNotes")) || [];
+        let colors = ["#fde68a", "#fca5a5", "#93c5fd", "#a7f3d0", "#fcd34d"];
+        
+        function getRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
 
         function renderNotes() {
             const grid = document.getElementById("notesGrid");
@@ -63,12 +68,14 @@
             grid.style.gridTemplateColumns = `repeat(${cols || 2}, 1fr)`;
             grid.style.gridTemplateRows = `repeat(${rows || 2}, auto)`;
             
-            notes.forEach((text, index) => {
+            notes.forEach((noteData, index) => {
                 const note = document.createElement("div");
                 note.className = "note";
+                note.style.backgroundColor = noteData.color || getRandomColor();
                 
                 const textarea = document.createElement("textarea");
-                textarea.value = text;
+                textarea.value = noteData.text;
+                textarea.style.backgroundColor = note.style.backgroundColor;
                 textarea.oninput = () => updateNote(index, textarea.value);
                 
                 const button = document.createElement("button");
@@ -83,13 +90,13 @@
         }
 
         function addNote() {
-            notes.push("");
+            notes.push({ text: "", color: getRandomColor() });
             updateStorage();
             renderNotes();
         }
 
         function updateNote(index, value) {
-            notes[index] = value;
+            notes[index].text = value;
             updateStorage();
         }
 
