@@ -25,7 +25,7 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             padding: 20px;
             flex-grow: 1;
@@ -54,17 +54,6 @@
             box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4);
         }
 
-        textarea {
-            width: 100%;
-            height: 100%;
-            border: none;
-            outline: none;
-            resize: none;
-            padding: 5px;
-            border-radius: 5px;
-            background: inherit;
-        }
-
         .box-controls {
             position: absolute;
             top: 5px;
@@ -73,12 +62,27 @@
             gap: 5px;
         }
 
-        .color-picker, .close-box {
+        .color-picker {
             width: 20px;
             height: 20px;
             cursor: pointer;
+            background: url('https://cdn-icons-png.flaticon.com/512/1827/1827951.png') no-repeat center;
+            background-size: cover;
             border: none;
-            background: none;
+        }
+
+        .close-box {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            background: red;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 5px;
         }
     </style>
 </head>
@@ -91,38 +95,6 @@
     </div>
     <div class="grid-container"></div>
     <script>
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + value + "; path=/" + expires;
-        }
-
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for (let i = 0; i < ca.length; i++) {
-                let c = ca[i];
-                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-            }
-            return null;
-        }
-
-        function saveData() {
-            let data = [];
-            document.querySelectorAll(".floating-box").forEach((box) => {
-                data.push({
-                    text: box.querySelector("textarea").value,
-                    color: box.style.backgroundColor
-                });
-            });
-            setCookie("boxData", JSON.stringify(data), 30);
-        }
-
         function addBox(text = "", color = null) {
             let box = document.createElement("div");
             box.className = "floating-box";
@@ -140,6 +112,14 @@
                 textarea.style.backgroundColor = e.target.value;
                 saveData();
             };
+            colorPicker.style.opacity = 0;
+            colorPicker.style.position = "absolute";
+            colorPicker.style.width = "20px";
+            colorPicker.style.height = "20px";
+            
+            let colorPickerIcon = document.createElement("div");
+            colorPickerIcon.className = "color-picker";
+            colorPickerIcon.onclick = () => colorPicker.click();
             
             let closeBox = document.createElement("button");
             closeBox.className = "close-box";
@@ -150,6 +130,7 @@
             };
             
             controls.appendChild(colorPicker);
+            controls.appendChild(colorPickerIcon);
             controls.appendChild(closeBox);
             
             let textarea = document.createElement("textarea");
@@ -162,36 +143,6 @@
             document.querySelector(".grid-container").appendChild(box);
             saveData();
         }
-
-        function downloadData() {
-            let data = getCookie("boxData");
-            let blob = new Blob([data], { type: "application/json" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "boxData.json";
-            link.click();
-        }
-
-        function uploadData(event) {
-            let file = event.target.files[0];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                setCookie("boxData", e.target.result, 30);
-                location.reload();
-            };
-            reader.readAsText(file);
-        }
-
-        window.onload = function() {
-            let storedData = getCookie("boxData");
-            if (storedData) {
-                JSON.parse(storedData).forEach(box => addBox(box.text, box.color));
-            } else {
-                for (let i = 0; i < 25; i++) {
-                    addBox();
-                }
-            }
-        };
     </script>
 </body>
 </html>
