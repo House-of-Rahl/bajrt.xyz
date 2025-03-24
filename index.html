@@ -26,7 +26,6 @@
         .grid-container {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(5, 1fr);
             gap: 10px;
             padding: 20px;
             flex-grow: 1;
@@ -35,8 +34,8 @@
         }
 
         .floating-box {
-            width: 100%;
-            height: 100%;
+            width: 100px;
+            height: 100px;
             box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
             border-radius: 15px;
             text-align: center;
@@ -64,29 +63,6 @@
             border-radius: 5px;
             background: inherit;
         }
-
-        .color-picker-icon {
-            width: 20px;
-            height: 20px;
-            background: url('https://cdn-icons-png.flaticon.com/512/565/565655.png') no-repeat center center;
-            background-size: cover;
-            cursor: pointer;
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-        }
-
-        .remove-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: red;
-            color: white;
-            border: none;
-            padding: 5px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
@@ -94,60 +70,58 @@
         <button onclick="addBox()">Add Tile</button>
         <button onclick="downloadData()">Download Data</button>
         <input type="file" onchange="uploadData(event)" style="display:none;" id="fileUpload"><button onclick="document.getElementById('fileUpload').click()">Upload Data</button>
-        <input type="color" id="bgColorPicker" onchange="changeBackgroundColor(this.value)">
     </div>
     <div class="grid-container"></div>
     <script>
-        let colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff", "#ff99c8", "#fcf6bd"];
-        
-        function saveData() {
-            let data = [];
-            document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
-                data[index] = textarea.value;
-            });
-            localStorage.setItem("boxData", JSON.stringify(data));
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + value + "; path=/" + expires;
         }
 
-        function addBox() {
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function saveData() {
+            let data = [];
+            document.querySelectorAll(".floating-box").forEach((box, index) => {
+                data.push({
+                    text: box.querySelector("textarea").value,
+                    color: box.style.backgroundColor
+                });
+            });
+            setCookie("boxData", JSON.stringify(data), 30);
+        }
+
+        function addBox(text = "", color = null) {
             let box = document.createElement("div");
             box.className = "floating-box";
-            let color = colors[Math.floor(Math.random() * colors.length)];
-            box.style.backgroundColor = color;
-
+            box.style.backgroundColor = color || `hsl(${Math.random() * 360}, 100%, 75%)`;
+            
             let textarea = document.createElement("textarea");
-            textarea.style.backgroundColor = color;
+            textarea.value = text;
+            textarea.style.backgroundColor = box.style.backgroundColor;
             textarea.oninput = saveData;
             box.appendChild(textarea);
-
-            let colorPickerIcon = document.createElement("div");
-            colorPickerIcon.className = "color-picker-icon";
-            colorPickerIcon.onclick = function() {
-                let colorInput = document.createElement("input");
-                colorInput.type = "color";
-                colorInput.style.position = "absolute";
-                colorInput.style.opacity = 0;
-                colorInput.oninput = function() {
-                    box.style.backgroundColor = this.value;
-                    textarea.style.backgroundColor = this.value;
-                };
-                colorInput.click();
-            };
-            box.appendChild(colorPickerIcon);
-
-            let removeBtn = document.createElement("button");
-            removeBtn.innerText = "X";
-            removeBtn.className = "remove-btn";
-            removeBtn.onclick = () => {
-                box.remove();
-                saveData();
-            };
-            box.appendChild(removeBtn);
-
+            
             document.querySelector(".grid-container").appendChild(box);
+            saveData();
         }
 
         function downloadData() {
-            let data = localStorage.getItem("boxData");
+            let data = getCookie("boxData");
             let blob = new Blob([data], { type: "application/json" });
             let link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
@@ -159,19 +133,20 @@
             let file = event.target.files[0];
             let reader = new FileReader();
             reader.onload = function(e) {
-                localStorage.setItem("boxData", e.target.result);
+                setCookie("boxData", e.target.result, 30);
                 location.reload();
             };
             reader.readAsText(file);
         }
 
-        function changeBackgroundColor(color) {
-            document.body.style.backgroundColor = color;
-        }
-
         window.onload = function() {
-            for (let i = 0; i < 25; i++) { // Initialize 5x5 grid
-                addBox();
+            let storedData = getCookie("boxData");
+            if (storedData) {
+                JSON.parse(storedData).forEach(box => addBox(box.text, box.color));
+            } else {
+                for (let i = 0; i < 25; i++) {
+                    addBox();
+                }
             }
         };
     </script>
