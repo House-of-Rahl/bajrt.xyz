@@ -5,55 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Ensures proper responsive behavior on different devices -->
     <title>Floating Box Grid</title> <!-- Sets the title of the webpage -->
     <style>
-        /* Basic reset for consistent styling */
         * {
-            margin: 0; /* Removes default margin */
-            padding: 0; /* Removes default padding */
-            box-sizing: border-box; /* Ensures width and height include padding and border */
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* Centering the grid container in the middle of the screen */
         body {
-            display: flex; /* Uses flexbox for layout */
-            justify-content: center; /* Centers content horizontally */
-            align-items: center; /* Centers content vertically */
-            height: 100vh; /* Sets height to 100% of viewport height */
-            background-color: #f0f0f0; /* Sets background color to light gray */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            padding-top: 20px;
         }
 
-        /* Grid container for floating boxes */
         .grid-container {
-            display: grid; /* Uses CSS grid layout */
-            grid-template-columns: repeat(4, 1fr); /* Defines 4 columns */
-            grid-template-rows: repeat(5, auto); /* Defines 5 rows */
-            gap: 20px; /* Adds spacing between boxes */
-            padding: 20px; /* Adds padding around the grid */
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 20px;
         }
 
-        /* Styling the floating box to be rectangular with rounded corners and a floating effect */
         .floating-box {
-            padding: 30px 50px; /* Adds padding inside the box to make it more rectangular */
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3); /* Adds a stronger shadow for a floating effect */
-            border-radius: 15px; /* Rounds the corners more */
-            text-align: center; /* Centers text inside the box */
-            transform: translateY(-5px); /* Slightly raises the box for a floating appearance */
-            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Smooth transition effect */
+            padding: 30px 50px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            position: relative;
         }
 
-        /* Hover effect to enhance the floating illusion */
         .floating-box:hover {
-            transform: translateY(-10px); /* Moves the box up slightly when hovered */
-            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4); /* Enhances shadow effect on hover */
+            transform: translateY(-10px);
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            border: none;
+            outline: none;
+            resize: none;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="grid-container"> <!-- Defines a container for the grid -->
+    <div>
+        <button onclick="addBox()">Add Box</button>
+        <input type="color" id="bgColorPicker" onchange="changeBackgroundColor(this.value)">
     </div>
+    <div class="grid-container"></div>
     <script>
         let colors = ["#ffadad", "#ffd6a5", "#fdffb6", "#caffbf", "#9bf6ff", "#a0c4ff", "#bdb2ff", "#ffc6ff", "#ff99c8", "#fcf6bd"];
-
-        /* Function to save data to local storage */
+        
         function saveData() {
             let data = [];
             document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
@@ -62,7 +81,6 @@
             document.cookie = "boxData=" + JSON.stringify(data) + ";path=/";
         }
 
-        /* Function to load data from cookies */
         function loadData() {
             let cookieData = document.cookie.split('; ').find(row => row.startsWith('boxData='));
             if (cookieData) {
@@ -71,59 +89,29 @@
             return [];
         }
 
-        /* Function to download data */
-        function downloadData() {
-            let data = [];
-            document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
-                data[index] = textarea.value;
-            });
-            let blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "boxData.json";
-            link.click();
+        function addBox() {
+            let box = document.createElement("div");
+            box.className = "floating-box";
+            let color = colors[Math.floor(Math.random() * colors.length)];
+            box.style.backgroundColor = color;
+
+            let textarea = document.createElement("textarea");
+            textarea.style.backgroundColor = color;
+            textarea.oninput = saveData;
+            box.appendChild(textarea);
+
+            let removeBtn = document.createElement("button");
+            removeBtn.innerText = "X";
+            removeBtn.className = "remove-btn";
+            removeBtn.onclick = () => box.remove();
+            box.appendChild(removeBtn);
+
+            document.querySelector(".grid-container").appendChild(box);
         }
 
-        /* Function to upload data */
-        function uploadData(event) {
-            let file = event.target.files[0];
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let uploadedData = JSON.parse(e.target.result);
-                document.querySelectorAll(".floating-box textarea").forEach((textarea, index) => {
-                    textarea.value = uploadedData[index] || "";
-                });
-            };
-            reader.readAsText(file);
+        function changeBackgroundColor(color) {
+            document.body.style.backgroundColor = color;
         }
-
-        let storedData = loadData();
-
-        for (let i = 0; i < 20; i++) { /* Loops to create 20 boxes */
-            let box = document.createElement("div"); /* Creates a new div element */
-            box.className = "floating-box"; /* Assigns the floating box class */
-            box.style.backgroundColor = colors[i % colors.length]; /* Assigns a different background color */
-            
-            let textarea = document.createElement("textarea"); /* Creates a textarea element */
-            textarea.style.width = "100%";
-            textarea.style.height = "100px";
-            textarea.value = storedData[i] || "";
-            textarea.oninput = saveData; /* Saves data when text is entered */
-
-            box.appendChild(textarea); /* Adds textarea to the box */
-            document.querySelector(".grid-container").appendChild(box); /* Appends the box to the grid container */
-        }
-
-        /* Add buttons for saving, downloading, and uploading data */
-        let controls = document.createElement("div");
-        controls.style.position = "absolute";
-        controls.style.top = "10px";
-        controls.style.right = "10px";
-        controls.innerHTML = `
-            <button onclick="downloadData()">Download Data</button>
-            <input type="file" onchange="uploadData(event)" />
-        `;
-        document.body.appendChild(controls);
     </script>
 </body>
 </html>
